@@ -195,7 +195,14 @@ class Crawler {
             func getMatches(pattern: String, text: String) -> [String] {
                 // used to remove the 'href="' & '"' from the matches
                 func trim(url: String) -> String {
-                    return String(url.dropLast()).substring(from: url.index(url.startIndex, offsetBy: "href=\"".count))
+                    // .substring(from:) was removed from Swift in Swift 4 --
+                    // this used to be a compile error. Also compute the
+                    // start index against the already-trailing-trimmed
+                    // string, not the original, so the index is valid for
+                    // the string it's actually used to slice.
+                    let withoutTrailingQuote = String(url.dropLast())
+                    let start = withoutTrailingQuote.index(withoutTrailingQuote.startIndex, offsetBy: "href=\"".count)
+                    return String(withoutTrailingQuote[start...])
                 }
                 
                 let regex = try! NSRegularExpression(pattern: pattern, options: [.caseInsensitive])
